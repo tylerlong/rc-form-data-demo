@@ -21,6 +21,33 @@ const main = async () => {
       },
     }
   );
-  console.log(r.data);
+  const accessToken = r.data.access_token;
+
+  let formData = '';
+  const boundary = 'ad05fc42-a66d-4a94-b807-f1c91136c17b';
+  formData += `--${boundary}\r\n`;
+  formData += 'Content-Type: application/json; charset=utf-8\r\n\r\n';
+  formData += `{"to": [{"phoneNumber": "${phoneNumber}"}], "from": {"phoneNumber": "16504223279"}, "text": "Hello world!"}`;
+
+  formData += `--${boundary}\r\n`;
+  formData += 'Content-Type: text/plain; charset=utf-8\r\n\r\n';
+  formData += 'Hello world';
+
+  const payload = Buffer.concat([
+    Buffer.from(formData, 'utf8'),
+    Buffer.from('\r\n--' + boundary + '--\r\n', 'utf8'),
+  ]);
+
+  const r2 = await axios.post(
+    `${server}/restapi/v1.0/account/~/extension/~/fax`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'multipart/form-data; boundary=' + boundary,
+      },
+    }
+  );
+  console.log(r2.data);
 };
 main();
