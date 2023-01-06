@@ -29,13 +29,13 @@ const main = async () => {
   formData += 'Content-Type: application/json; charset=utf-8\r\n';
   formData +=
     'Content-Disposition: form-data; name="request.json"; filename="request.json"\r\n\r\n';
-  formData += `{"to": [{"phoneNumber": "${phoneNumber}"}]}`;
+  formData += `{"to": [{"phoneNumber": "${phoneNumber}"}]}\r\n`;
 
   formData += `--${boundary}\r\n`;
   formData += 'Content-Type: text/plain; charset=utf-8\r\n';
   formData +=
     'Content-Disposition: form-data; name="test.txt"; filename="test.txt"\r\n\r\n';
-  formData += 'Hello world';
+  formData += 'Hello world\r\n';
 
   const payload = Buffer.concat([
     Buffer.from(formData, 'utf8'),
