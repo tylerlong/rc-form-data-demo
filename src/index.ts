@@ -25,17 +25,24 @@ const main = async () => {
 
   let formData = '';
   const boundary = 'ad05fc42-a66d-4a94-b807-f1c91136c17b';
-  formData += `--${boundary}\r\n`;
-  formData += 'Content-Type: application/json; charset=utf-8\r\n';
-  formData +=
-    'Content-Disposition: form-data; name="request.json"; filename="request.json"\r\n\r\n';
-  formData += `{"to": [{"phoneNumber": "${phoneNumber}"}]}\r\n`;
 
-  formData += `--${boundary}\r\n`;
-  formData += 'Content-Type: text/plain; charset=utf-8\r\n';
-  formData +=
-    'Content-Disposition: form-data; name="test.txt"; filename="test.txt"\r\n\r\n';
-  formData += 'Hello world\r\n';
+  const appendFile = (
+    fileName: string,
+    contentType: string,
+    content: string
+  ) => {
+    formData += `--${boundary}\r\n`;
+    formData += `Content-Type: ${contentType}\r\n`;
+    formData += `Content-Disposition: form-data; name="${fileName}"; filename="${fileName}"\r\n\r\n`;
+    formData += `${content}\r\n`;
+  };
+
+  appendFile(
+    'request.json',
+    'application/json',
+    `{"to": [{"phoneNumber": "${phoneNumber}"}]}`
+  );
+  appendFile('test.txt', 'text/plain', 'Hello world!');
 
   const payload = Buffer.concat([
     Buffer.from(formData, 'utf8'),
