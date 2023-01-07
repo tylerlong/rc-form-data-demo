@@ -1,5 +1,6 @@
 import axios from 'axios';
 import * as querystring from 'querystring';
+import * as fs from 'fs';
 
 const server = process.env.RINGCENTRAL_SERVER_URL!;
 const clientId = process.env.RINGCENTRAL_CLIENT_ID!;
@@ -23,18 +24,26 @@ const main = async () => {
   );
   const accessToken = r.data.access_token;
 
-  let formData = '';
+  let formData = Buffer.alloc(0);
   const boundary = 'ad05fc42-a66d-4a94-b807-f1c91136c17b';
 
   const appendFile = (
     fileName: string,
     contentType: string,
-    content: string
+    content: string | Buffer
   ) => {
-    formData += `--${boundary}\r\n`;
-    formData += `Content-Type: ${contentType}\r\n`;
-    formData += `Content-Disposition: form-data; name="${fileName}"; filename="${fileName}"\r\n\r\n`;
-    formData += `${content}\r\n`;
+    let temp = `--${boundary}\r\n`;
+    temp += `Content-Type: ${contentType}\r\n`;
+    temp += `Content-Disposition: form-data; name="${fileName}"; filename="${fileName}"\r\n\r\n`;
+    formData = Buffer.concat([formData, Buffer.from(temp, 'utf-8')]);
+    if (typeof content === 'string') {
+      formData = Buffer.concat([
+        formData,
+        Buffer.from(`${content}\r\n`, 'utf-8'),
+      ]);
+    } else {
+      formData = Buffer.concat([formData, content as Buffer]);
+    }
   };
 
   appendFile(
@@ -43,9 +52,10 @@ const main = async () => {
     `{"to": [{"phoneNumber": "${phoneNumber}"}]}`
   );
   appendFile('test.txt', 'text/plain', 'Hello world!');
+  appendFile('test.png', 'image/png', fs.readFileSync('test.png'));
 
   const payload = Buffer.concat([
-    Buffer.from(formData, 'utf8'),
+    formData,
     Buffer.from('\r\n--' + boundary + '--\r\n', 'utf8'),
   ]);
 
