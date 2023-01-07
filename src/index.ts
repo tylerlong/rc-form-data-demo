@@ -27,23 +27,27 @@ const main = async () => {
   let formData = Buffer.alloc(0);
   const boundary = 'ad05fc42-a66d-4a94-b807-f1c91136c17b';
 
-  const appendFile = (
+  const appendFile = async (
     fileName: string,
     contentType: string,
-    content: string | Buffer
+    content: string | Buffer | Blob | NodeJS.ReadableStream
   ) => {
     let temp = `--${boundary}\r\n`;
     temp += `Content-Type: ${contentType}\r\n`;
     temp += `Content-Disposition: form-data; name="${fileName}"; filename="${fileName}"\r\n\r\n`;
     formData = Buffer.concat([formData, Buffer.from(temp, 'utf-8')]);
+    let fileBuffer = Buffer.alloc(0);
     if (typeof content === 'string') {
-      formData = Buffer.concat([
-        formData,
-        Buffer.from(`${content}\r\n`, 'utf-8'),
-      ]);
+      fileBuffer = Buffer.from(`${content}\r\n`, 'utf-8');
+    } else if (Buffer.isBuffer(content)) {
+      fileBuffer = content;
+    } else if (content instanceof Blob) {
+      fileBuffer = Buffer.from(await content.arrayBuffer());
     } else {
-      formData = Buffer.concat([formData, content as Buffer]);
+      // NodeJS.ReadableStream
+      fileBuffer = content.read() as Buffer;
     }
+    formData = Buffer.concat([formData, fileBuffer]);
   };
 
   appendFile(
